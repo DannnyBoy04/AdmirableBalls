@@ -1,75 +1,136 @@
-/*******************************************************************************************
- *
- *   raylib [core] example - basic window
- *
- *   Example complexity rating: [★☆☆☆] 1/4
- *
- *   Welcome to raylib!
- *
- *   To test examples, just press F6 and execute 'raylib_compile_execute' script
- *   Note that compiled executable is placed in the same folder as .c file
- *
- *   To test the examples on Web, press F6 and execute
- * 'raylib_compile_execute_web' script Web version of the program is generated
- * in the same folder as .c file
- *
- *   You can find all basic examples on C:\raylib\raylib\examples folder or
- *   raylib official webpage: www.raylib.com
- *
- *   Enjoy using raylib. :)
- *
- *   Example originally created with raylib 1.0, last time updated with
- * raylib 1.0
- *
- *   Example licensed under an unmodified zlib/libpng license, which is an
- * OSI-certified, BSD-like license that allows static linking with closed source
- * software
- *
- *   Copyright (c) 2013-2025 Ramon Santamaria (@raysan5)
- *
- ********************************************************************************************/
-
 #include "raylib.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/types.h>
+#include <time.h>
 
-//------------------------------------------------------------------------------------
-// Program main entry point
-//------------------------------------------------------------------------------------
-int main(void) {
-  // Initialization
-  //--------------------------------------------------------------------------------------
-  const int screenWidth = 800;
-  const int screenHeight = 450;
+#define WIDTH 400
+#define HEIGHT 400
+#define TITLE "Balls and their admirers"
+#define BALL_COUNT 100
+#define FPS 60
+#define VEL_MAX 5
+#define RADIUS_MAX 20
+#define RADIUS_MIN 5
 
-  InitWindow(screenWidth, screenHeight, "raylib [core] example - basic window");
+Color COLORS[] = {
+    LIGHTGRAY, GRAY,   DARKGRAY, YELLOW,     GOLD,      ORANGE,  PINK,
+    RED,       MAROON, GREEN,    LIME,       DARKGREEN, SKYBLUE, BLUE,
+    DARKBLUE,  PURPLE, VIOLET,   DARKPURPLE, BEIGE,     BROWN,   DARKBROWN,
+};
 
-  SetTargetFPS(60); // Set our game to run at 60 frames-per-second
-  //--------------------------------------------------------------------------------------
+// Definition of Ball
+// Ball stores state and other properties
+// MY CODE START
+typedef struct Ball {
+  int posx, posy, velx, vely, radius;
+  Color color;
+  struct Ball
+      *follows; // Pointer to the Ball struct that this Ball struct follows.
+} Ball;
+// MY CODE END
 
-  // Main game loop
+Ball balls[BALL_COUNT];
+
+// Initializes a ball with random values
+Ball *init_ball_random(Ball *p) {
+  // Randomly initialize state and properties
+
+  // MY CODE START
+  // Set the x position to a random number in the range [0 ; WIDTH - 1].
+  // Set the y position to a random number in the range [0 ; HEIGHT - 1].
+  p->posx = rand() % WIDTH;
+  p->posy = rand() % HEIGHT;
+
+  // Set the x and y velocities to a random number
+  // in the range [-VEL_MAX ; VEL_MAX].
+  p->velx = -VEL_MAX + (rand() % (2 * VEL_MAX + 1));
+  p->vely = -VEL_MAX + (rand() % (2 * VEL_MAX + 1));
+
+  // Set the radius to a random number in the range [RADIUS_MIN ; RADIUS_MAX].
+  p->radius = RADIUS_MIN + (rand() % (RADIUS_MAX - RADIUS_MIN + 1));
+
+  // Set the color to a random color in the COLORS array.
+  size_t colors_count = sizeof(COLORS) / sizeof(COLORS[0]);
+  p->color = COLORS[rand() % colors_count];
+  // MY CODE END
+
+  // MY CODE START
+  // Make the ball follow nothing temporarily, as its not necessary to
+  // find a leader immediately.
+  // Making a ball follow an uninitialized ball causes the program
+  // to dereference uninitialized memory, causing problems.
+  p->follows = nullptr;
+  // MY CODE END
+
+  return p;
+}
+
+// Initialize all `balls`
+void init_balls_random() {
+  // MY CODE START
+  // Seed rand() with the current time.
+  srand(time(NULL));
+
+  // Make a pointer to the Ball struct with memory allocated for its size.
+  Ball *ball_ptr = malloc(sizeof(Ball));
+
+  // Loop through and randomly initialize all of the balls in the balls array.
+  for (size_t i = 0; i < BALL_COUNT; i++) {
+    ball_ptr = &balls[i];
+    *ball_ptr = *init_ball_random(ball_ptr);
+
+    // Keep finding new balls for balls[i] to follow
+    // until it doesn't follow itself.
+    while (ball_ptr == &balls[i]) {
+      ball_ptr = &balls[rand() % BALL_COUNT];
+    }
+    // Make balls[i] follow the randomly generated ball (not balls[i]).
+    balls[i].follows = ball_ptr;
+  }
+  // MY CODE END
+}
+
+Ball *draw_ball(Ball *p) {
+  DrawCircle(p->posx, p->posy, p->radius, p->color);
+  return p;
+}
+
+// Updates the positions of balls according to their velocities
+Ball *update_pos(Ball *p) {
+  p->posx = (WIDTH + p->posx + p->velx) %
+            WIDTH; // `WIDTH +` because C uses truncated division
+  p->posy = (HEIGHT + p->posy + p->vely) % HEIGHT;
+  return p;
+}
+
+// Updates the velocity of a ball so that it follows the leading ball
+Ball *update_vel_for_following(Ball *p) {
+  int errx = p->follows->posx - p->posx;
+  int erry = p->follows->posy - p->posy;
+  p->velx = errx > 0 ? 1 : -1;
+  p->vely = erry > 0 ? 1 : -1;
+  return p;
+}
+
+// Update all elements
+void update_elements() {
+  for (size_t i = 0; i < _Countof balls; ++i) {
+    draw_ball(update_pos(update_vel_for_following(&balls[i])));
+  }
+}
+
+int main() {
+  InitWindow(WIDTH, HEIGHT, TITLE);
+  SetTargetFPS(FPS);
+
+  init_balls_random();
+
   while (!WindowShouldClose()) // Detect window close button or ESC key
   {
-    // Update
-    //----------------------------------------------------------------------------------
-    // TODO: Update your variables here
-    //----------------------------------------------------------------------------------
-
-    // Draw
-    //----------------------------------------------------------------------------------
     BeginDrawing();
-
+    update_elements();
     ClearBackground(RAYWHITE);
-
-    DrawText("Congrats! You created your first window!", 190, 200, 20,
-             LIGHTGRAY);
-
     EndDrawing();
-    //----------------------------------------------------------------------------------
   }
-
-  // De-Initialization
-  //--------------------------------------------------------------------------------------
-  CloseWindow(); // Close window and OpenGL context
-  //--------------------------------------------------------------------------------------
-
-  return 0;
 }
