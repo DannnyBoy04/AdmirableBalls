@@ -42,7 +42,7 @@ Ball *init_ball_random(Ball *p) {
   p->posx = rand() % WIDTH;
   p->posy = rand() % HEIGHT;
 
-  // Set the x and y velocities to a random number
+  // Set the x and y velocity components to a random number
   // in the range [-VEL_MAX ; VEL_MAX].
   p->velx = -VEL_MAX + (rand() % (2 * VEL_MAX + 1));
   p->vely = -VEL_MAX + (rand() % (2 * VEL_MAX + 1));

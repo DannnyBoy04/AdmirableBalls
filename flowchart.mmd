@@ -1,0 +1,47 @@
+flowchart TD
+
+%% === BALL STRUCT DEFINITION ===
+subgraph STRUCT["typedef struct Ball"]
+    S1["Fields inside the Ball structure:"]
+    S2["posx, posy : current position of the ball"]
+    S3["velx, vely : velocity components"]
+    S4["radius : radius of the ball"]
+    S5["color : color of the ball (from COLORS array)"]
+    S6["follows : pointer to another Ball that this Ball follows"]
+    S1 --> S2 --> S3 --> S4 --> S5 --> S6
+end
+
+
+%% === INIT BALL RANDOM ===
+subgraph INIT_ONE["init_ball_random(Ball *p)"]
+    R0(["Start initializing a single Ball"])
+    R1["Set p->posx to random value in [0, WIDTH-1]"]
+    R2["Set p->posy to random value in [0, HEIGHT-1]"]
+    R3["Set p->velx to random value in [-VEL_MAX, VEL_MAX]"]
+    R4["Set p->vely to random value in [-VEL_MAX, VEL_MAX]"]
+    R5["Set p->radius to random value in [RADIUS_MIN, RADIUS_MAX]"]
+    R6["Choose random color index from COLORS array and set p->color"]
+    R7["Temporarily make p->follows = nullptr (no leader yet)"]
+    R8(["Return pointer p"])
+    R0 --> R1 --> R2 --> R3 --> R4 --> R5 --> R6 --> R7 --> R8
+end
+
+
+%% === INIT ALL BALLS RANDOM ===
+subgraph INIT_ALL["init_balls_random()"]
+    A0(["Start initializing all balls"])
+    A1["Seed random generator with current time using srand(time(NULL))"]
+    A2["Allocate pointer Ball *ball_ptr with space for one Ball"]
+    A3["Loop through every index i in balls array"]
+    A4["Set ball_ptr = &balls[i]"]
+    A5["Call init_ball_random(ball_ptr) to fill balls[i] with random values"]
+    A6["Repeat: pick random other ball to follow until it is not itself"]
+    A7["Assign balls[i].follows = chosen ball_ptr"]
+    A8(["End loop and return"])
+    A0 --> A1 --> A2 --> A3 --> A4 --> A5 --> A6 --> A7 --> A8
+end
+
+
+%% === RELATIONSHIPS ===
+STRUCT -.-> INIT_ONE
+INIT_ONE -.-> INIT_ALL
