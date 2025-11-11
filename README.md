@@ -1,6 +1,6 @@
 # Overview
 
-This is a basic C program that uses raylib v5.5 and a struct type called Ball to generate 100 2D balls with a random position, velocity, radis, color and following a random other ball. It makes use of struct pointers in order to avoid passing the Ball struct by value, and the same logic is applied elswhere.
+This is a basic C program that uses raylib v5.5 and a struct type called Ball to generate 100 2D balls with a random position, velocity, radius, color and following a random other ball. It makes use of struct pointers in order to avoid passing the Ball struct by value, and the same logic is applied elswhere.
 I have only written the parts wrapped by ``MY CODE START`` and ``MY CODE END``.
 
 ## Example output
